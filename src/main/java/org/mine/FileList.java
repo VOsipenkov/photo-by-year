@@ -11,8 +11,8 @@ import java.util.stream.Collectors;
 public class FileList {
     private static final String ATTRIBUTE = "year";
     private static final String PNG = "png";
-    private static final String JPG = "png";
-    private static final String JPEG = "png";
+    private static final String JPG = "jpg";
+    private static final String JPEG = "jpeg";
 
     /**
      * Из текущей директории собираются все пути
@@ -23,12 +23,13 @@ public class FileList {
         return listPath(Path.of("./"));
     }
 
-    public List<Path> listPath(Path root) {
+    public List<Path> listPath(Path path) {
         try {
-            var path = Path.of("./");
             return Files.list(path)
                 .filter(p -> !Files.isDirectory(p))
-                .filter(p -> p.endsWith("png") || p.endsWith("jpg") || p.endsWith("jpeg"))
+                .filter(p -> p.toString().endsWith(PNG)
+                    || p.toString().endsWith(JPG)
+                    || p.toString().endsWith(JPEG))
                 .collect(Collectors.toList());
         } catch (IOException e) {
             System.out.println("Ошибка во время чтения списка путей..");

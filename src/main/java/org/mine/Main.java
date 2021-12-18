@@ -32,15 +32,13 @@ public class Main {
         JButton fileCopy, JButton fileGroup, JTextField jTextField) {
         fileCountInSource.addActionListener(e -> {
             var count = fileService.countSourceFiles();
-            System.out.format("В текущей директории найдено %n фотографий: " + count);
-            System.out.println();
+            System.out.format("В текущей директории найдено %d фотографий %n", count);
             jTextField.setText(String.valueOf(count));
         });
 
         fileCountInTarget.addActionListener(e -> {
             var count = fileService.countTargetFiles();
-            System.out.format("В директории %s найдено %n фотографий: \\n", FileService.PHOTO_BY_YEAR, count);
-            System.out.println();
+            System.out.format("В директории %s найдено %d фотографий %n ", FileService.PHOTO_BY_YEAR, count);
             jTextField.setText(String.valueOf(count));
         });
     }
