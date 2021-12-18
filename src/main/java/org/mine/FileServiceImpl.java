@@ -3,12 +3,8 @@ package org.mine;
 import java.io.File;
 import java.nio.file.Path;
 
-/**
- * todo Document type FileServiceImpl
- */
 public class FileServiceImpl implements FileService {
     private FileList fileList = new FileList();
-
 
     @Override
     public long countSourceFiles() {
@@ -24,6 +20,8 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public void groupFiles() {
-
+        var paths = fileList.listPaths();
+        var grouped = fileList.groupByYear(paths);
+        fileList.writeGroups(grouped);
     }
 }

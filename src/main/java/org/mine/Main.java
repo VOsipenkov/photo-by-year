@@ -41,5 +41,15 @@ public class Main {
             System.out.format("В директории %s найдено %d фотографий %n ", FileService.PHOTO_BY_YEAR, count);
             jTextField.setText(String.valueOf(count));
         });
+
+        fileGroup.addActionListener(e -> {
+            System.out.println("Группировка начата");
+            var startCount = fileService.countSourceFiles();
+            fileService.groupFiles();
+            var targetCount = fileService.countTargetFiles();
+            assert startCount == targetCount;
+            System.out.println("Группировка завершена");
+            jTextField.setText("Готово");
+        });
     }
 }

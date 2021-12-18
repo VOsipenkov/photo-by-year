@@ -1,5 +1,6 @@
 package org.mine;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -7,6 +8,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static org.mine.FileService.PHOTO_BY_YEAR;
 
 public class FileList {
     private static final String ATTRIBUTE = "year";
@@ -43,7 +46,7 @@ public class FileList {
      *
      * @param paths
      */
-    public void groupByYear(List<Path> paths) {
+    public HashMap<String, List<Path>> groupByYear(List<Path> paths) {
         var byYear = new HashMap<String, List<Path>>();
         paths.stream().forEach(path -> {
             var year = getAttribute(path);
@@ -54,6 +57,32 @@ public class FileList {
             value.add(path);
             byYear.put(year, value);
         });
+        return byYear;
+    }
+
+    public void writeGroups(HashMap<String, List<Path>> paths) {
+        paths.keySet().forEach(year -> createDir(year));
+        paths.forEach((k, v) -> v.forEach(pathSource -> fileCopy(k, pathSource)));
+    }
+
+    private void fileCopy(String year, Path source) {
+        try {
+            var name = source.toString();
+            var target = Path.of(PHOTO_BY_YEAR.toString(), name);
+            Files.copy(source, target);
+        } catch (Exception e) {
+            System.out.println("При копировании файлов возникла ошибка");
+            e.printStackTrace();
+        }
+    }
+
+    private void createDir(String name) {
+        try {
+            Files.createFile(Path.of(PHOTO_BY_YEAR.toString(), name));
+        } catch (IOException e) {
+            System.out.format("Не удалось создать директорию с именем %s", name);
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -62,7 +91,7 @@ public class FileList {
      * @param path
      * @return
      */
-    public static String getAttribute(Path path) {
+    private static String getAttribute(Path path) {
         try {
             var value = Files.getAttribute(path, ATTRIBUTE);
             return (String) value;
