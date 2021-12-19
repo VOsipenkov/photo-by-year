@@ -1,19 +1,19 @@
 package org.mine;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.attribute.FileTime;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static java.lang.System.*;
+import static java.lang.System.out;
 import static java.util.List.of;
 import static org.mine.FileService.PHOTO_BY_YEAR;
 
@@ -35,7 +35,7 @@ public class FileList {
     private static final DateTimeFormatter FORMAT8 = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final List<DateTimeFormatter> PATTERNS_WITH_TIME = of(FORMAT1, FORMAT2, FORMAT3,
         FORMAT4, FORMAT5, FORMAT6, FORMAT7);
-    private static final List<DateTimeFormatter> PATTERNS = of (FORMAT8);
+    private static final List<DateTimeFormatter> PATTERNS = of(FORMAT8);
 
     /**
      * Из текущей директории собираются все пути
@@ -149,11 +149,12 @@ public class FileList {
                 }
             }
 
-            for (DateTimeFormatter formatter : PATTERNS){
-                try{
-                    var localDate = LocalDate.parse(date , formatter);
+            for (DateTimeFormatter formatter : PATTERNS) {
+                try {
+                    var localDate = LocalDate.parse(date, formatter);
                     return localDate.getYear();
-                }catch (Exception e){}
+                } catch (Exception e) {
+                }
             }
         }
 
