@@ -72,8 +72,8 @@ public class FileList {
 
     private void fileCopy(Integer year, Path source) {
         try {
-//            var name = source.toString();
-            var target = Path.of(PHOTO_BY_YEAR.toString(), year.toString());
+            var name = source.getFileName().toString();
+            var target = Path.of(PHOTO_BY_YEAR.toString(), year.toString(), name).normalize();
             Files.copy(source, target);
         } catch (Exception e) {
             System.out.println("При копировании файлов возникла ошибка");
