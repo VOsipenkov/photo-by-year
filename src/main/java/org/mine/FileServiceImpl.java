@@ -8,20 +8,20 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public long countSourceFiles() {
-        var pathList = fileList.listPaths();
+        var pathList = fileList.listFilesByPath();
         return fileList.count(pathList);
     }
 
     @Override
     public long countTargetFiles() {
-        var pathList = fileList.listPath(PHOTO_BY_YEAR);
+        var pathList = fileList.listFilesByPath(PHOTO_BY_YEAR);
         return fileList.count(pathList);
     }
 
     @Override
     public void groupFiles() {
-        var paths = fileList.listPaths();
-        var grouped = fileList.groupByYear(paths);
+        var images = fileList.listFilesByPath();
+        var grouped = fileList.groupByYear(images);
         fileList.writeGroups(grouped);
     }
 }

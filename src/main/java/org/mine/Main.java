@@ -8,28 +8,26 @@ public class Main {
 
     public static void main(String[] args) {
         JFrame frame = new JFrame();
-        JButton fileCountInSource = new JButton("Посчитать для копирования");
+        JButton fileCountInSource = new JButton("Count in source");
         fileCountInSource.setSize(new Dimension(100, 50));
-        JButton fileCountInTarget = new JButton("Посчитать скопированные");
-        JButton fileGroup = new JButton("Сгруппировать по годам в C:\\photo-by-year");
-        JButton fileCopy = new JButton("Скопировать в C:\\photo");
+        JButton fileCountInTarget = new JButton("Count in target");
+        JButton fileGroup = new JButton("Grouped by year in C:\\photo-by-year");
         JTextField jTextField = new JTextField();
         jTextField.setColumns(10);
         JPanel panel = new JPanel();
         panel.add(fileCountInSource);
         panel.add(fileCountInTarget);
-        panel.add(fileCopy);
         panel.add(fileGroup);
         panel.add(jTextField);
         frame.getContentPane().add(panel);
-        listenersConfig(fileCountInSource, fileCountInTarget, fileCopy, fileGroup, jTextField);
+        listenersConfig(fileCountInSource, fileCountInTarget, fileGroup, jTextField);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setSize(700, 400);
         frame.setVisible(true);
     }
 
     private static void listenersConfig(JButton fileCountInSource, JButton fileCountInTarget,
-        JButton fileCopy, JButton fileGroup, JTextField jTextField) {
+        JButton fileGroup, JTextField jTextField) {
         fileCountInSource.addActionListener(e -> {
             var count = fileService.countSourceFiles();
             System.out.format("В текущей директории найдено %d фотографий %n", count);
