@@ -5,21 +5,38 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
+import static java.lang.System.*;
+import static java.util.List.of;
 import static org.mine.FileService.PHOTO_BY_YEAR;
 
 public class FileList {
-    private static final String ATTRIBUTE = "creationTime";
+    private static final String LAST_MODIFIED_TIME = "lastModifiedTime";
+    private static final String CREATION_TIME = "creationTime";
     private static final String PNG = "png";
     private static final String JPG = "jpg";
     private static final String JPEG = "jpeg";
-    private static final String FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX";
+    private static final String DATE_IN_NAME_REGEXP =
+        "(\\d{4})[-.:]{0,1}(\\d{2})[-.:]{0,1}(\\d{2})('T'){0,1}(\\d{2}){0,1}[-.:]{0,1}(\\d{2}){0,1}[:.-]{0,1}(\\d{2}){0,1}";
+    private static final DateTimeFormatter FORMAT1 = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX");
+    private static final DateTimeFormatter FORMAT2 = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+    private static final DateTimeFormatter FORMAT3 = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SS");
+    private static final DateTimeFormatter FORMAT4 = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+    private static final DateTimeFormatter FORMAT5 = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX");
+    private static final DateTimeFormatter FORMAT6 = DateTimeFormatter.ofPattern("yyyy-MM-dd'_'HH-mm-ss");
+    private static final DateTimeFormatter FORMAT7 = DateTimeFormatter.ofPattern("yyyy:MM:dd'_'HH:mm:ss");
+    private static final DateTimeFormatter FORMAT8 = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private static final List<DateTimeFormatter> PATTERNS_WITH_TIME = of(FORMAT1, FORMAT2, FORMAT3,
+        FORMAT4, FORMAT5, FORMAT6, FORMAT7);
+    private static final List<DateTimeFormatter> PATTERNS = of (FORMAT8);
+
     /**
      * Из текущей директории собираются все пути
      *
@@ -34,7 +51,7 @@ public class FileList {
             return Files.find(path, 10, (p, attr) -> attr.isRegularFile() && isImage(p))
                 .collect(Collectors.toList());
         } catch (IOException e) {
-            System.out.println("Ошибка во время чтения списка путей..");
+            out.println("Ошибка во время чтения списка путей..");
         }
         return null;
     }
@@ -52,9 +69,8 @@ public class FileList {
     public HashMap<Integer, List<Path>> groupByYear(List<Path> paths) {
         var byYear = new HashMap<Integer, List<Path>>();
         paths.stream().forEach(path -> {
-            var date = getAttribute(path);
-            var localDateTime = LocalDateTime.parse(date, DateTimeFormatter.ofPattern(FORMAT));
-            var year  = localDateTime.getYear();
+            var year = getAttribute(path);
+
             var value = byYear.get(year);
             if (value == null) {
                 value = new ArrayList<>();
@@ -70,13 +86,21 @@ public class FileList {
         paths.forEach((k, v) -> v.forEach(pathSource -> fileCopy(k, pathSource)));
     }
 
+    public long count(List<Path> paths) {
+        return paths.stream().count();
+    }
+
+    // ===================================================================================================================
+    // = Implementation
+    // ===================================================================================================================
+
     private void fileCopy(Integer year, Path source) {
         try {
             var name = source.getFileName().toString();
             var target = Path.of(PHOTO_BY_YEAR.toString(), year.toString(), name).normalize();
             Files.copy(source, target);
         } catch (Exception e) {
-            System.out.println("При копировании файлов возникла ошибка");
+            out.println("При копировании файлов возникла ошибка");
             e.printStackTrace();
         }
     }
@@ -85,28 +109,54 @@ public class FileList {
         try {
             Files.createDirectories(Path.of(PHOTO_BY_YEAR.toString(), name.toString()));
         } catch (IOException e) {
-            System.out.format("Не удалось создать директорию с именем %s", name);
+            out.format("Не удалось создать директорию с именем %s", name);
             e.printStackTrace();
         }
     }
 
     /**
-     * из полученного пути извлекается значение параметра год
+     * выбираем самое раннее упоминания о файле из аттрибутов и имени
      *
      * @param path
      * @return
      */
-    private static String getAttribute(Path path) {
+    private int getAttribute(Path path) {
         try {
-            var value = Files.getAttribute(path, ATTRIBUTE);
-            return ((FileTime)value).toString();
+            var lastModifiedText = Files.getAttribute(path, LAST_MODIFIED_TIME).toString();
+            var creationTimeText = Files.getAttribute(path, CREATION_TIME).toString();
+            var fileName = path.getFileName().toString();
+            var matcher = Pattern.compile(DATE_IN_NAME_REGEXP).matcher(fileName);
+            String creationByName = null;
+            if (matcher.find()) {
+                creationByName = matcher.group();
+            }
+
+            return IntStream.of(getYear(lastModifiedText), getYear(creationTimeText), getYear(creationByName))
+                .min().orElse(Integer.MAX_VALUE);
         } catch (Exception e) {
-            System.out.println("error whith path " + path);
+            out.println("error whith path " + path);
         }
-        return null;
+        return 0;
     }
 
-    public long count(List<Path> paths) {
-        return paths.stream().count();
+    private int getYear(String date) {
+        if (date != null) {
+            for (DateTimeFormatter formatter : PATTERNS_WITH_TIME) {
+                try {
+                    var localDateTime = LocalDateTime.parse(date, formatter);
+                    return localDateTime.getYear();
+                } catch (Exception e) {
+                }
+            }
+
+            for (DateTimeFormatter formatter : PATTERNS){
+                try{
+                    var localDate = LocalDate.parse(date , formatter);
+                    return localDate.getYear();
+                }catch (Exception e){}
+            }
+        }
+
+        return Integer.MAX_VALUE;
     }
 }
