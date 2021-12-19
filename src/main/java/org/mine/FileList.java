@@ -67,6 +67,7 @@ public class FileList {
      * @param paths
      */
     public HashMap<Integer, List<Path>> groupByYear(List<Path> paths) {
+        out.println("Выполняется группировка по годам..");
         var byYear = new HashMap<Integer, List<Path>>();
         paths.stream().forEach(path -> {
             var year = getAttribute(path);
@@ -82,6 +83,7 @@ public class FileList {
     }
 
     public void writeGroups(HashMap<Integer, List<Path>> paths) {
+        out.println("Запись сгруппированных файлов по годам..");
         paths.keySet().forEach(year -> createDir(year));
         paths.forEach((k, v) -> v.forEach(pathSource -> fileCopy(k, pathSource)));
     }
